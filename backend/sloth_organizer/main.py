@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.routing import APIRouter
 
+from sloth_organizer.database import init_db
+
 # ---------------------------------------------------------------------------
 # Stub routers (replaced by real implementations in Sub-Tasks 3–5)
 # ---------------------------------------------------------------------------
@@ -37,9 +39,8 @@ async def lm_studio_status() -> dict:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Sub-Task 2 will call init_db() here
+    init_db()
     yield
-    # cleanup (if needed) goes here
 
 
 # ---------------------------------------------------------------------------

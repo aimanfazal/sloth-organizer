@@ -239,7 +239,7 @@ load time, show a status badge, accept a folder path input, and navigate to the 
 
 ### Sub-Task 7 — Frontend: Scan Progress (Screen 2)
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent:**
 Build the Scan screen that connects to the backend WebSocket and shows live progress: percent
@@ -268,7 +268,7 @@ complete, current stage label, and the final summary counts when the scan finish
 
 ### Sub-Task 8 — Frontend: AI Organization Summary (Screen 3)
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent:**
 Build the AI Organization screen that triggers plan generation (calls `POST /api/scans/{scan_id}/plan`),
@@ -297,7 +297,7 @@ shows a loading state while the model runs, and then displays the folder breakdo
 
 ### Sub-Task 9 — Frontend: Tasks Dashboard (Screen 4)
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent:**
 Build the Tasks screen that surfaces only the files requiring human action, grouped by priority
@@ -325,7 +325,7 @@ Build the Tasks screen that surfaces only the files requiring human action, grou
 
 ### Sub-Task 10 — Frontend: Review Screen (Screen 5)
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent:**
 Build the Review screen where the user approves or rejects each proposed file change.
@@ -355,7 +355,7 @@ Approval state is persisted to the backend immediately.
 
 ### Sub-Task 11 — Frontend: Apply Screen (Screen 6)
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent:**
 Build the Apply screen that shows a final summary of approved changes, supports dry-run preview,

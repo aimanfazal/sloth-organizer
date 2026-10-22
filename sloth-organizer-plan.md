@@ -58,7 +58,7 @@ so that every subsequent sub-task has a stable place to land.
 
 ### Sub-Task 2 — SQLite Data Layer
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent:**
 Define the database schema and ORM models for scans, files, plans, and plan items so that

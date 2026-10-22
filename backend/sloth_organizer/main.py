@@ -4,37 +4,13 @@ from pathlib import Path
 import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.routing import APIRouter
 
 from sloth_organizer.database import init_db
-
-# ---------------------------------------------------------------------------
-# Stub routers (replaced by real implementations in Sub-Tasks 3–5)
-# ---------------------------------------------------------------------------
-
-scan_router = APIRouter(prefix="/scan", tags=["scan"])
-plan_router = APIRouter(prefix="/plans", tags=["plan"])
-apply_router = APIRouter(prefix="/plans", tags=["apply"])
-lm_router = APIRouter(prefix="/lm-studio", tags=["lm-studio"])
-
-
-@scan_router.get("/health")
-async def scan_health() -> dict:
-    return {"status": "ok", "router": "scan"}
-
-
-@plan_router.get("/health")
-async def plan_health() -> dict:
-    return {"status": "ok", "router": "plan"}
-
-
-@lm_router.get("/status")
-async def lm_studio_status() -> dict:
-    return {"connected": False, "model": None}
+from sloth_organizer.routers.scan import router as scan_router, ws_router
 
 
 # ---------------------------------------------------------------------------
-# Lifespan — stub ready for DB init in Sub-Task 2
+# Lifespan
 # ---------------------------------------------------------------------------
 
 @asynccontextmanager
@@ -53,11 +29,22 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# API routers under /api
+# API routers
 app.include_router(scan_router, prefix="/api")
-app.include_router(plan_router, prefix="/api")
-app.include_router(apply_router, prefix="/api")
-app.include_router(lm_router, prefix="/api")
+
+# WebSocket router (no /api prefix — WS path is /ws/scan/{scan_id})
+app.include_router(ws_router)
+
+# Stub routers for Sub-Tasks 4 & 5 (replaced in those sub-tasks)
+from fastapi.routing import APIRouter as _APIRouter
+
+_lm_router = _APIRouter(prefix="/lm-studio", tags=["lm-studio"])
+
+@_lm_router.get("/status")
+async def lm_studio_status() -> dict:
+    return {"connected": False, "model": None}
+
+app.include_router(_lm_router, prefix="/api")
 
 # Static files — SPA fallback (must be mounted last)
 _static_dir = Path(__file__).parent / "static"

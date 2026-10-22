@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import uuid4
 
 from sqlmodel import Field, SQLModel
+from sqlmodel._compat import NaiveDatetime
 
 
 # ---------------------------------------------------------------------------
@@ -17,7 +18,7 @@ class Scan(SQLModel, table=True):
     folder_count: int = 0
     duplicate_groups: int = 0
     total_size_bytes: int = 0
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # ---------------------------------------------------------------------------
@@ -31,8 +32,8 @@ class ScannedFile(SQLModel, table=True):
     relative_path: str
     extension: str
     size_bytes: int
-    created_at: datetime
-    modified_at: datetime
+    created_at: NaiveDatetime
+    modified_at: NaiveDatetime
     mime_type: str
     sha256: str
     content_preview: Optional[str] = None
@@ -48,7 +49,7 @@ class Plan(SQLModel, table=True):
     scan_id: str = Field(foreign_key="scan.id", index=True)
     summary: str
     status: str = "pending"           # "pending" | "applied" | "error"
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 # ---------------------------------------------------------------------------

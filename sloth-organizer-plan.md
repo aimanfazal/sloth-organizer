@@ -384,7 +384,7 @@ and executes the plan on user confirmation. Shows per-item results after executi
 
 ### Sub-Task 12 — Packaging & README
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent:**
 Wire everything together into a single installable pip package: build script that compiles the

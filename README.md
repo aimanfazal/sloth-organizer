@@ -1,24 +1,27 @@
 # 🦥 Sloth Organizer
 
-A local-first AI application that scans a messy folder, uses a locally-running open-weight model
-(via LM Studio) to propose an organization plan, and applies approved file moves/renames safely
-after human review.
+A local-first AI application that scans a messy folder, uses a locally-running
+open-weight model (via LM Studio) to propose an organization plan, and applies
+approved file moves/renames safely after human review.
+
+**Your files never leave your machine.** AI inference runs entirely through LM Studio
+on localhost — no cloud API, no telemetry, no account required.
 
 ---
 
 ## Prerequisites
 
-| Tool | Version |
-|------|---------|
-| Python | 3.11+ |
-| Node.js | 18+ |
-| LM Studio | latest — https://lmstudio.ai |
+| Tool | Version | Notes |
+|------|---------|-------|
+| Python | 3.11+ | [python.org](https://python.org) |
+| Node.js | 18+ | [nodejs.org](https://nodejs.org) |
+| LM Studio | latest | [lmstudio.ai](https://lmstudio.ai) — download a chat model and start the local server |
 
 ---
 
-## Setup
+## Quick Start
 
-### 1. Clone the repository
+### 1. Clone
 
 ```bash
 git clone https://github.com/your-org/sloth-organizer.git
@@ -40,44 +43,71 @@ This installs all backend dependencies and registers the `sloth-organizer` CLI c
 ./build.ps1
 ```
 
-**Linux / macOS (bash):**
+**Linux / macOS:**
 ```bash
 chmod +x build.sh
 ./build.sh
 ```
 
-### 4. Configure environment
+The script runs `npm install && npm run build` inside `frontend/`, then copies the
+compiled output into `backend/sloth_organizer/static/` so FastAPI can serve it.
+
+### 4. Configure environment (optional)
 
 ```bash
-cp frontend/.env.example frontend/.env
+cp .env.example .env
 ```
 
-Edit `frontend/.env` to point to your LM Studio instance if it is not on `localhost:1234`.
+Edit `.env` to override any defaults — most users only need to change
+`LM_STUDIO_MODEL` if they want to pin a specific model name.
 
 ### 5. Start LM Studio
 
-Open LM Studio, load a model, and start the local server (default port 1234).
+Open LM Studio, load a model, and **start the local server** (default port `1234`).
+The server must be running before you launch Sloth Organizer.
 
-### 6. Run Sloth Organizer
+### 6. Run
 
 ```bash
 sloth-organizer
 ```
 
-The app will be available at **http://localhost:8000**.  
-FastAPI interactive docs are at **http://localhost:8000/docs**.
+Open **http://localhost:8000** in your browser.  
+FastAPI interactive API docs are at **http://localhost:8000/docs**.
 
 ---
 
 ## Environment Variables
 
+Create a `.env` file in the **repo root** (copy from `.env.example`).
+
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `LM_STUDIO_BASE_URL` | `http://127.0.0.1:1234/v1` | Base URL of the LM Studio OpenAI-compatible API |
-| `LM_STUDIO_MODEL` | *(auto-detect)* | Model identifier to use for inference |
-| `DB_PATH` | `~/.sloth_organizer/data.db` | Path to the SQLite database file |
+| `LM_STUDIO_BASE_URL` | `http://127.0.0.1:1234/v1` | LM Studio OpenAI-compatible API base URL |
+| `LM_STUDIO_MODEL` | *(auto-detect first loaded model)* | Model ID to request for inference |
+| `DB_PATH` | `~/.sloth_organizer/data.db` | SQLite database path (`~` is expanded) |
 
-Copy `.env.example` to `.env` in the repo root and override any values you need.
+The frontend `VITE_API_BASE_URL` variable (in `frontend/.env`) only matters during
+development; in production the React app is served by the same FastAPI process.
+
+---
+
+## User Flow
+
+```
+Home  →  Scan  →  Organize  →  Tasks  →  Review  →  Apply
+ │         │          │           │          │          │
+enter    watch      wait for    see what   approve/   execute
+folder   progress   AI plan     needs      reject     moves
+path     live       generate    attention  each file
+```
+
+1. **Home** — Enter a folder path; LM Studio status badge confirms the AI is ready.
+2. **Scan** — Live progress bar shows hashing, MIME detection, duplicate grouping.
+3. **Organize** — AI analyses every file and proposes a destination + optional rename.
+4. **Tasks** — Action items grouped by priority (🔥 High → 🟡 Medium → 🟢 Low).
+5. **Review** — Approve or reject each proposed change, one card per file.
+6. **Apply** — Confirm the summary (N moves, 0 deletes), then execute.
 
 ---
 
@@ -86,15 +116,72 @@ Copy `.env.example` to `.env` in the repo root and override any values you need.
 ```
 sloth-organizer/
 ├── backend/
-│   └── sloth_organizer/     # Python package
-│       ├── __init__.py
-│       ├── main.py          # FastAPI app + entry point
+│   └── sloth_organizer/
+│       ├── main.py          # FastAPI app + CLI entry point
+│       ├── config.py        # Pydantic settings (reads .env)
+│       ├── database.py      # SQLite engine + session dependency
+│       ├── models.py        # SQLModel table definitions
+│       ├── scanner.py       # Recursive folder scan + SHA-256 + MIME
+│       ├── extractors.py    # Content preview (.txt/.pdf/.docx/.xlsx)
+│       ├── ai_client.py     # LM Studio prompt + JSON validation
+│       ├── executor.py      # Safe file move/rename with 10-step checks
+│       ├── ws.py            # WebSocket connection manager
+│       ├── routers/
+│       │   ├── scan.py      # POST /api/scan, GET /api/scans/{id}
+│       │   ├── plan.py      # POST …/plan, GET, PATCH items
+│       │   ├── apply.py     # POST …/apply
+│       │   └── lm_studio.py # GET /api/lm-studio/status
 │       └── static/          # Compiled React build (generated by build script)
-├── frontend/                # Vite + React + TypeScript source
+├── frontend/
 │   ├── src/
-│   └── .env.example
-├── pyproject.toml
+│   │   ├── api/             # Typed fetch client + WebSocket helper + types
+│   │   ├── components/      # LmStudioBadge, FileCard
+│   │   └── pages/           # Home, Scan, Organize, Tasks, Review, Apply
+│   └── .env.example         # Frontend env (VITE_API_BASE_URL)
+├── .env.example             # Backend env (LM_STUDIO_*, DB_PATH)
+├── pyproject.toml           # Python package + CLI entry point
 ├── build.ps1                # Windows build script
-├── build.sh                 # Linux/macOS build script
-└── README.md
+└── build.sh                 # Linux/macOS build script
 ```
+
+---
+
+## Development
+
+Run the backend and frontend separately for hot-reload:
+
+**Backend:**
+```bash
+uvicorn sloth_organizer.main:app --reload
+```
+
+**Frontend** (in a separate terminal):
+```bash
+cd frontend
+cp .env.example .env          # set VITE_API_BASE_URL=http://localhost:8000
+npm install
+npm run dev
+```
+
+The Vite dev server proxies API calls to the FastAPI backend via `VITE_API_BASE_URL`.
+
+---
+
+## Safety Model
+
+Sloth Organizer treats AI output as **untrusted input**. Before touching the filesystem:
+
+1. JSON response is validated and normalised.
+2. Source file existence is verified.
+3. Source path is resolved and checked to remain inside the scan root.
+4. Destination is sanitised — no path separators, no traversal.
+5. Destination path is resolved and checked to remain inside the scan root.
+6. Collisions are resolved by appending `(2)`, `(3)` — never silent overwrite.
+7. Only items explicitly approved by the user are ever moved.
+8. No files are deleted under any circumstances.
+
+---
+
+## License
+
+MIT

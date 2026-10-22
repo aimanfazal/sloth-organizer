@@ -88,7 +88,7 @@ all backend modules share a single, typed data layer with persistent state acros
 
 ### Sub-Task 3 — File Scanner (Backend)
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent:**
 Implement the core filesystem scanning logic: recursive directory walk, metadata collection,
@@ -136,7 +136,7 @@ This is the first heavy domain module and must be correct before the AI layer is
 
 ### Sub-Task 4 — LM Studio AI Integration (Backend)
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent:**
 Implement the context builder and AI client that takes scanned file metadata, constructs a

@@ -7,6 +7,8 @@ from fastapi.staticfiles import StaticFiles
 
 from sloth_organizer.database import init_db
 from sloth_organizer.routers.scan import router as scan_router, ws_router
+from sloth_organizer.routers.plan import router as plan_router
+from sloth_organizer.routers.lm_studio import router as lm_router
 
 
 # ---------------------------------------------------------------------------
@@ -31,20 +33,11 @@ app = FastAPI(
 
 # API routers
 app.include_router(scan_router, prefix="/api")
+app.include_router(plan_router, prefix="/api")
+app.include_router(lm_router, prefix="/api")
 
-# WebSocket router (no /api prefix — WS path is /ws/scan/{scan_id})
+# WebSocket router (no /api prefix)
 app.include_router(ws_router)
-
-# Stub routers for Sub-Tasks 4 & 5 (replaced in those sub-tasks)
-from fastapi.routing import APIRouter as _APIRouter
-
-_lm_router = _APIRouter(prefix="/lm-studio", tags=["lm-studio"])
-
-@_lm_router.get("/status")
-async def lm_studio_status() -> dict:
-    return {"connected": False, "model": None}
-
-app.include_router(_lm_router, prefix="/api")
 
 # Static files — SPA fallback (must be mounted last)
 _static_dir = Path(__file__).parent / "static"

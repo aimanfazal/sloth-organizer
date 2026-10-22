@@ -209,7 +209,7 @@ or touch unapproved items.
 
 ### Sub-Task 6 — Frontend: Home + LM Studio Status (Screen 1)
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent:**
 Build the Home screen — the entry point of the app. It must check LM Studio connectivity at

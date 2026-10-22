@@ -48,14 +48,15 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-def broadcast_sync(scan_id: str, message: dict[str, Any]) -> None:
+def broadcast_sync(scan_id: str, message: dict[str, Any], loop: asyncio.AbstractEventLoop | None = None) -> None:
     """
-    Fire-and-forget broadcast from synchronous code.
-    Schedules the coroutine on the running event loop.
+    Thread-safe broadcast from synchronous code running in a thread pool.
+    Uses run_coroutine_threadsafe so the coroutine is scheduled on the event
+    loop that owns the WebSocket connections, not the calling thread.
     """
     try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            asyncio.ensure_future(manager.broadcast(scan_id, message))
-    except RuntimeError:
+        _loop = loop or asyncio.get_event_loop()
+        future = asyncio.run_coroutine_threadsafe(manager.broadcast(scan_id, message), _loop)
+        future.result(timeout=5)  # block the worker thread briefly to preserve ordering
+    except Exception:
         pass

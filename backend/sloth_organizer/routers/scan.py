@@ -60,14 +60,25 @@ async def start_scan(
     session.add(scan)
     session.commit()
 
-    # Run the scan in a background thread (blocking I/O) so the HTTP response
-    # is returned immediately, while progress flows over WebSocket.
-    loop = asyncio.get_event_loop()
-    background_tasks.add_task(
-        _run_scan_in_thread, loop, str(folder), scan_id
-    )
+    # Capture the running event loop now (in the async context) so the worker
+    # thread can schedule WebSocket broadcasts back onto it.
+    loop = asyncio.get_running_loop()
+    background_tasks.add_task(_launch_scan_thread, loop, str(folder), scan_id)
 
     return {"scan_id": scan_id, "file_count": 0, "duplicate_groups": 0}
+
+
+async def _launch_scan_thread(
+    loop: asyncio.AbstractEventLoop,
+    folder: str,
+    scan_id: str,
+) -> None:
+    """
+    BackgroundTask entry point (runs in the async event loop).
+    Offloads the blocking scan to a thread-pool executor so the event loop
+    stays free to send WebSocket messages while the scan is running.
+    """
+    await loop.run_in_executor(None, _run_scan_in_thread, loop, folder, scan_id)
 
 
 def _run_scan_in_thread(
@@ -75,12 +86,12 @@ def _run_scan_in_thread(
     folder: str,
     scan_id: str,
 ) -> None:
-    """Executed in a BackgroundTask (async context, but scan_folder is sync)."""
+    """Executed in a thread-pool worker — event loop is free to handle WS sends."""
     from sloth_organizer.database import engine
     from sqlmodel import Session as _Session
 
     def _progress(pct: int, label: str) -> None:
-        broadcast_sync(scan_id, {"type": "progress", "percent": pct, "stage": label})
+        broadcast_sync(scan_id, {"type": "progress", "percent": pct, "stage": label}, loop)
 
     with _Session(engine) as session:
         try:
@@ -96,9 +107,9 @@ def _run_scan_in_thread(
                         "duplicate_groups": scan.duplicate_groups,
                         "total_size_bytes": scan.total_size_bytes,
                     },
-                })
+                }, loop)
         except Exception as exc:
-            broadcast_sync(scan_id, {"type": "error", "message": str(exc)})
+            broadcast_sync(scan_id, {"type": "error", "message": str(exc)}, loop)
             # Mark scan as errored
             scan = session.get(Scan, scan_id)
             if scan:

@@ -9,6 +9,7 @@ from sloth_organizer.database import init_db
 from sloth_organizer.routers.scan import router as scan_router, ws_router
 from sloth_organizer.routers.plan import router as plan_router
 from sloth_organizer.routers.lm_studio import router as lm_router
+from sloth_organizer.routers.apply import router as apply_router
 
 
 # ---------------------------------------------------------------------------
@@ -35,6 +36,7 @@ app = FastAPI(
 app.include_router(scan_router, prefix="/api")
 app.include_router(plan_router, prefix="/api")
 app.include_router(lm_router, prefix="/api")
+app.include_router(apply_router, prefix="/api")
 
 # WebSocket router (no /api prefix)
 app.include_router(ws_router)

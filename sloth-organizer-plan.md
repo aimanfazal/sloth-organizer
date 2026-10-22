@@ -175,7 +175,7 @@ stores the resulting organization plan in SQLite.
 
 ### Sub-Task 5 — Safe File Executor (Backend)
 
-**Status:** `[ ] pending`
+**Status:** `[x] done`
 
 **Intent:**
 Implement the plan executor that applies approved file moves and renames safely, following

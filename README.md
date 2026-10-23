@@ -182,6 +182,10 @@ Sloth Organizer treats AI output as **untrusted input**. Before touching the fil
 
 ---
 
-## License
+## Built for Hacktoberfest
 
-MIT
+Sloth Organizer was built for the [Hacktoberfest Open-Source AI Challenge: Week 3](https://dev.to/events/81), themed **“Slow and Steady.”** The challenge invited builders to create something with open-source AI that rewards laziness, inspired by International Sloth Day.
+
+This project fits the theme by using a locally running open-weight model through LM Studio to quietly organize messy folders. It automates the file sorting and renaming work people tend to put off while keeping every change reviewable and user-approved. Because inference runs locally, Sloth Organizer also demonstrates why open innovation matters: useful AI can be private, transparent, and accessible without sending files to a cloud service.
+
+The challenge ran from **October 19–25, 2026**, and asked participants to show what they built, explain the effort it saves, and share why open innovation matters. Learn more about the challenge on the [HF26 DEV Challenge Hub](https://dev.to/challenges/hf26).
